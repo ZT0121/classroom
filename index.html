@@ -14,9 +14,7 @@
     <link rel="manifest" href="manifest.json">
 
     <style>
-        /* =========================================
-           1. 字體設定
-           ========================================= */
+        /* 1. 字體設定 */
         @font-face {
             font-family: 'ZhuyinFont';
             src: url('./fonts/zhuyin.ttf') format('truetype'),
@@ -42,38 +40,26 @@
             -webkit-tap-highlight-color: transparent;
         }
 
-        /* === ❗ 強制套用注音字體 (包含 btn) ❗ === */
+        /* 強制套用注音字體 */
         .role-info h2, .role-info p, .menu-title, .menu-sub, .q-text, .q-sub, .opt-btn, .hint-toggle, .use-zhuyin, .btn {
             font-family: 'ZhuyinFont', "Microsoft JhengHei", sans-serif !important;
             font-weight: normal;
         }
 
-        /* === 🚫 防作弊：黑體 === */
+        /* 防作弊：黑體 */
         .no-zhuyin {
             font-family: "Microsoft JhengHei", -apple-system, sans-serif !important;
         }
 
         /* 通用元件 */
         .hidden { display: none !important; }
-        .btn { 
-            border: none; 
-            border-radius: 16px; 
-            cursor: pointer; 
-            transition: 0.2s; 
-            font-weight: bold; 
-            outline: none; 
-            display: flex; 
-            align-items: center; 
-            justify-content: center;
-        }
+        .btn { border: none; border-radius: 16px; cursor: pointer; transition: 0.2s; font-weight: bold; outline: none; display: flex; align-items: center; justify-content: center; }
         .btn:active { transform: scale(0.96); }
         .icon-btn { background: #eee; width: 60px; height: 60px; border-radius: 50%; font-size: 30px; border: none; cursor: pointer; }
         
-        /* 導覽列 */
         .navbar { width: 100%; padding: 15px 25px; background: white; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 15px rgba(0,0,0,0.05); position: sticky; top: 0; z-index: 100; box-sizing: border-box; }
         .score-board { font-size: 24px; color: #555; font-weight: bold; font-family: -apple-system, sans-serif; }
 
-        /* 首頁 */
         #home-view { display: flex; flex-direction: column; gap: 25px; margin-top: 8vh; width: 90%; max-width: 450px; }
         .role-card { background: white; padding: 30px; border-radius: 25px; box-shadow: 0 10px 25px rgba(0,0,0,0.08); display: flex; align-items: center; gap: 25px; cursor: pointer; transition: 0.3s; }
         .role-card:active { transform: scale(0.98); }
@@ -81,53 +67,42 @@
         .role-info h2 { margin: 0; font-size: 32px; color: #333; }
         .role-info p { margin: 8px 0 0; color: #888; font-size: 18px; }
         
-        /* 主題色 */
         .hunter-app { background: var(--hunter-bg); }
         .angus-app { background: var(--angus-bg); }
         
-        /* 選單列表 */
         .menu-list { display: grid; grid-template-columns: 1fr; gap: 20px; width: 90%; max-width: 550px; padding: 20px 0; }
         .menu-item { background: white; padding: 25px; border-radius: 20px; text-align: center; box-shadow: 0 5px 15px rgba(0,0,0,0.05); border-left: 10px solid var(--primary); display: flex !important; width: 100% !important; box-sizing: border-box; min-height: 100px; justify-content: center; align-items: center; }
         .menu-title { font-size: 36px; color: #333; margin: 0; display: inline-block; line-height: 1.4; white-space: nowrap; }
         .menu-sub { font-size: 18px; color: #888; display: block; margin-top: 5px; }
 
-        /* 答題區 */
         .quiz-container { width: 95%; max-width: 900px; display: flex; flex-direction: column; align-items: center; padding-top: 20px; }
         .card { background: white; width: 100%; padding: 40px 20px; border-radius: 30px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); text-align: center; margin-bottom: 30px; position: relative; box-sizing: border-box; }
         
-        /* 🎨 米字格特效 (Workbook Style) 
-           這是透過 CSS 漸層畫出來的，看起來像作業簿的格子
-        */
-        .rice-grid-bg {
-            background-image: 
-                linear-gradient(0deg, transparent 49%, #eee 49%, #eee 51%, transparent 51%), /* 橫線 */
-                linear-gradient(90deg, transparent 49%, #eee 49%, #eee 51%, transparent 51%), /* 直線 */
-                linear-gradient(45deg, transparent 49.5%, #f9f9f9 49.5%, #f9f9f9 50.5%, transparent 50.5%), /* 斜線1 */
-                linear-gradient(-45deg, transparent 49.5%, #f9f9f9 49.5%, #f9f9f9 50.5%, transparent 50.5%); /* 斜線2 */
-            background-size: 100% 100%;
-            border: 4px solid #ddd; /* 外框 */
-            width: 180px;  /* 固定大小 */
-            height: 180px; /* 固定大小 */
-            margin: 0 auto 20px auto; /* 置中 */
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 10px;
-        }
-
+        /* 題目大字 (純淨版) */
         .q-text { 
             font-size: 100px; 
             color: #333; 
-            /* 讓文字在米字格中完美置中 */
-            line-height: 1; 
-            z-index: 10;
+            margin: 20px 0; 
+            min-height: 120px; 
+            display: flex; 
+            flex-direction: column; /* 垂直堆疊：字在上，副標在下 */
+            align-items: center; 
+            justify-content: center; 
+            line-height: 1.2; 
         }
         
         .q-sub { font-size: 24px; color: #666; margin-top: 5px; margin-bottom: 15px; white-space: nowrap; }
 
-        /* 選項排版 (RWD) */
-        .options-grid { display: flex; width: 100%; gap: 20px; flex-direction: row; justify-content: center; flex-wrap: wrap; }
-        
+        /* 選項排版 (橫向排列) */
+        .options-grid { 
+            display: flex; 
+            width: 100%; 
+            gap: 20px; 
+            flex-direction: row;       /* 橫向 */
+            justify-content: center;   /* 居中 */
+            flex-wrap: wrap;           /* 自動換行 */
+        }
+
         .opt-btn { 
             background: white; 
             border: 4px solid #f0f0f0; 
@@ -141,9 +116,9 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            flex: 1; 
-            min-width: 150px; 
-            max-width: 300px; 
+            flex: 1;                   
+            min-width: 150px;          
+            max-width: 300px;          
         }
 
         .opt-btn:active { transform: translateY(6px); box-shadow: none; }
@@ -308,9 +283,7 @@
                 <div class="quiz-container">
                     <div class="card">
                         <button class="icon-btn" onclick="speakCurrent()">🔊</button>
-                        <div class="rice-grid-bg">
-                            <div id="q-display" class="q-text"></div>
-                        </div>
+                        <div id="q-display" class="q-text"></div>
                         <div id="q-sub-display" class="q-sub"></div>
                         <div id="hint-btn" class="hidden"></div>
                     </div>
@@ -345,41 +318,22 @@
             currentQ = qData;
             const display = document.getElementById('q-display');
             const subDisplay = document.getElementById('q-sub-display');
-            const gridBox = document.querySelector('.rice-grid-bg');
-
-            // 重置狀態
+            
+            // 清空副標題
             subDisplay.innerHTML = "";
-            gridBox.style.display = 'flex'; // 預設顯示米字格
 
             // 🚫 防作弊核心
             if (type === 'h_zhuyin') {
-                display.className = 'q-text no-zhuyin'; // 黑體
+                display.className = 'q-text no-zhuyin'; // 考拼音時，大字用黑體
                 display.innerHTML = qData.q;
             } else {
-                display.className = 'q-text use-zhuyin'; // 注音體
+                display.className = 'q-text use-zhuyin'; // 其他時候用注音體
                 if (type === 'h_char') {
                     display.innerHTML = qData.q;
                     subDisplay.innerText = qData.sub;
                 }
-                else if (type.includes('english')) {
-                    // 英文不需要米字格，隱藏框框
-                    gridBox.style.display = 'none';
-                    // 重新把題目塞到外面去，因為 gridBox 被隱藏了
-                    // 這裡為了簡單，我們動態調整
-                    display.innerHTML = currentRole==='hunter' ? "???" : qData.q;
-                    gridBox.style.display = 'flex'; // 還是顯示框框好了，統一風格
-                    gridBox.style.border = 'none';  // 但不要格線
-                    gridBox.style.backgroundImage = 'none';
-                }
-                else if (type === 'a_zhuyin') {
-                    display.innerHTML = "?";
-                }
-            }
-            
-            // 如果是國語類別，確保米字格出現
-            if (type.includes('chinese') || type === 'a_zhuyin') {
-                gridBox.style.border = '4px solid #ddd';
-                gridBox.style.backgroundImage = 'linear-gradient(0deg, transparent 49%, #eee 49%, #eee 51%, transparent 51%), linear-gradient(90deg, transparent 49%, #eee 49%, #eee 51%, transparent 51%), linear-gradient(45deg, transparent 49.5%, #f9f9f9 49.5%, #f9f9f9 50.5%, transparent 50.5%), linear-gradient(-45deg, transparent 49.5%, #f9f9f9 49.5%, #f9f9f9 50.5%, transparent 50.5%)';
+                else if (type.includes('english')) display.innerHTML = currentRole==='hunter' ? "???" : qData.q;
+                else if (type === 'a_zhuyin') display.innerHTML = "?";
             }
 
             const hintDiv = document.getElementById('hint-btn');
