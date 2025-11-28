@@ -378,8 +378,10 @@
                 let btn = document.createElement('button');
                 btn.className = 'opt-btn btn';
                 btn.innerText = opt;
+                
                 if (opt.length > 4) btn.style.fontSize = "24px";
                 else btn.style.fontSize = "36px";
+
                 let correctAns = qData.a || qData.q;
                 btn.onclick = () => checkAnswer(btn, opt, correctAns, type);
                 optContainer.appendChild(btn);
@@ -440,8 +442,7 @@
             let config = mathConfig;
             let qText = "", qSub = "", ans = "";
             let currentType = config.type;
-            let speakText = ""; 
-
+            
             let maxTries = 10;
             let uniqueFound = false;
             let finalQStr = "";
@@ -477,14 +478,15 @@
                     qText = `<div style="display:flex; flex-wrap:wrap; justify-content:center; gap:5px; line-height:1.2;">${icon.repeat(count)}</div>`;
                     qSub = ""; 
                     ans = count.toString();
-                    speakText = "有幾個？";
+                    currentQ = { ans: ans, type: currentType, speak: "有幾個？" }; 
                 } else if (currentType === 'clock') {
                     let h = Math.floor(Math.random() * 12) + 1;
                     let m = 0;
                     let isHalf = (config.range === 'half' || (config.type === 'mix' && Math.random() > 0.5)) && Math.random() > 0.5;
                     if (isHalf) m = 30;
                     drawClock(h, m);
-                    qSub = "現在是幾點？";
+                    qText = "現在是幾點？";
+                    qSub = "";
                     ans = m === 30 ? `${h}:30` : `${h}:00`;
                     finalQStr = `${h}:${m}`;
                     uniqueFound = true; 
@@ -499,18 +501,28 @@
 
             if (currentType === 'clock') {
                 document.getElementById('clock-canvas').classList.remove('hidden');
-                document.getElementById('math-q').classList.add('hidden');
+                document.getElementById('math-q').classList.remove('hidden');
+                
+                // 🛠️ 修正：如果是時鐘，題目字體縮小
+                const qEl = document.getElementById('math-q');
+                qEl.innerText = qText; 
+                qEl.style.fontSize = "50px"; 
+
                 if (ans.endsWith(':30')) document.getElementById('half-btn').classList.remove('hidden');
-                document.getElementById('math-sub').innerText = qSub; // 🛠️ 確保時鐘副標題顯示
             } else {
-                document.getElementById('math-q').innerHTML = qText;
+                if (currentType !== 'count') {
+                     currentQ = { ans: ans, type: currentType };
+                }
+                const qEl = document.getElementById('math-q');
+                qEl.innerHTML = qText;
+                qEl.style.fontSize = "80px"; 
                 document.getElementById('math-sub').innerHTML = qSub; 
             }
             
-            // 🛠️ 修正：設定正確的 currentQ，確保 checkMath 讀得到
-            currentQ = { ans: ans, type: currentType, speak: speakText };
-
-            if(speakText) setTimeout(() => speakCurrent(), 300);
+            // 🛠️ 確保時鐘題的答案被記錄
+            currentQ = { ans: ans, type: currentType };
+            if (currentType === 'count') currentQ.speak = "有幾個？";
+            if (currentQ.speak) setTimeout(() => speakCurrent(), 300);
         }
 
         function inputNum(val) {
