@@ -92,9 +92,10 @@
             margin: 20px 0; 
             min-height: 120px; 
             display: flex; 
-            flex-direction: column; 
-            align-items: center; 
+            flex-direction: row; 
+            flex-wrap: wrap;     
             justify-content: center; 
+            align-items: center; 
             line-height: 1.3; 
             word-wrap: break-word; 
             white-space: normal; 
@@ -150,10 +151,15 @@
     <script src="questions.js"></script>
 
     <script>
+        // --- 防呆：確保 DB 存在 ---
+        if (typeof DB === 'undefined') {
+            alert("錯誤：找不到題庫檔案 questions.js，請確認檔案是否已上傳！");
+        }
+
         let currentRole = null;
         let score = 0;
         let currentQ = null;
-        let lastMathQ = ""; // 記錄上一題數學
+        let lastMathQ = ""; 
         let inputBuffer = ""; 
         let mathConfig = null;
 
@@ -165,6 +171,7 @@
             
             document.body.className = role === 'hunter' ? 'hunter-app' : 'angus-app';
             document.getElementById('nav-title').innerText = role === 'hunter' ? 'Hunter 專屬' : 'Angus 專屬';
+            
             if (role === 'hunter') { showHunterCategories(); } 
             else { showAngusCategories(); }
         }
@@ -195,7 +202,9 @@
             if (subject === 'chinese') {
                 addMenuItem(list, "圈詞注音練習", "聽音選注音", () => startQuiz('h_zhuyin'));
             } else if (subject === 'math') {
-                DB.hunter.mathUnits.forEach(u => addMenuItem(list, u.name, u.desc, () => startMath(u)));
+                if(DB.hunter.mathUnits) {
+                    DB.hunter.mathUnits.forEach(u => addMenuItem(list, u.name, u.desc, () => startMath(u)));
+                }
             } else if (subject === 'english') {
                 addMenuItem(list, "雙語繪本單字", "聽音辨字", () => startQuiz('h_english'));
             }
@@ -219,7 +228,9 @@
             if (subject === 'zhuyin') {
                 addMenuItem(list, "注音符號找找看", "", () => startQuiz('a_zhuyin'));
             } else if (subject === 'math') {
-                DB.angus.mathUnits.forEach(u => addMenuItem(list, u.name, u.desc, () => startMath(u)));
+                if(DB.angus.mathUnits) {
+                    DB.angus.mathUnits.forEach(u => addMenuItem(list, u.name, u.desc, () => startMath(u)));
+                }
             } else if (subject === 'english') {
                 addMenuItem(list, "簡單單字", "", () => startQuiz('a_english'));
             }
@@ -249,44 +260,24 @@
             parent.appendChild(btn);
         }
 
+        // ----------------------------------------------------
+        // 核心生成器
+        // ----------------------------------------------------
         function generateConfusingOptions(correctZhuyin) {
-            const confusionMap = {
-                'ㄣ': 'ㄥ', 'ㄥ': 'ㄣ', 'ㄢ': 'ㄤ', 'ㄤ': 'ㄢ',
-                'ㄓ': 'ㄗ', 'ㄗ': 'ㄓ', 'ㄕ': 'ㄙ', 'ㄙ': 'ㄕ',
-                'ㄔ': 'ㄘ', 'ㄘ': 'ㄔ', 'ㄌ': 'ㄖ', 'ㄖ': 'ㄌ',
-                'ㄅ': 'ㄆ', 'ㄆ': 'ㄅ', 'ㄉ': 'ㄊ', 'ㄊ': 'ㄉ',
-                'ㄍ': 'ㄎ', 'ㄎ': 'ㄍ', 'ㄐ': 'ㄑ', 'ㄑ': 'ㄐ',
-                'ㄨ': 'ㄩ', 'ㄩ': 'ㄨ', 'ㄟ': 'ㄝ', 'ㄝ': 'ㄟ',
-                'ㄡ': 'ㄛ', 'ㄛ': 'ㄡ',
-                'ˊ': 'ˇ', 'ˇ': 'ˋ', 'ˋ': '˙', '˙': '' 
-            };
-
+            const confusionMap = { 'ㄣ':'ㄥ', 'ㄥ':'ㄣ', 'ㄢ':'ㄤ', 'ㄤ':'ㄢ', 'ㄓ':'ㄗ', 'ㄗ':'ㄓ', 'ㄕ':'ㄙ', 'ㄙ':'ㄕ', 'ㄔ':'ㄘ', 'ㄘ':'ㄔ', 'ㄌ':'ㄖ', 'ㄖ':'ㄌ', 'ㄅ':'ㄆ', 'ㄆ':'ㄅ', 'ㄉ':'ㄊ', 'ㄊ':'ㄉ', 'ㄍ':'ㄎ', 'ㄎ':'ㄍ', 'ㄐ':'ㄑ', 'ㄑ':'ㄐ', 'ㄨ':'ㄩ', 'ㄩ':'ㄨ', 'ㄟ':'ㄝ', 'ㄝ':'ㄟ', 'ㄡ':'ㄛ', 'ㄛ':'ㄡ', 'ˊ':'ˇ', 'ˇ':'ˋ', 'ˋ':'˙', '˙':'' };
             let options = new Set();
             options.add(correctZhuyin);
-
             let toneDistractor = correctZhuyin;
             const tones = ['ˊ', 'ˇ', 'ˋ', '˙'];
-            if (tones.includes(correctZhuyin.slice(-1))) {
-                toneDistractor = correctZhuyin.slice(0, -1) + (correctZhuyin.slice(-1) === 'ˊ' ? 'ˇ' : 'ˊ');
-            } else {
-                toneDistractor = correctZhuyin + 'ˊ';
-            }
+            if (tones.includes(correctZhuyin.slice(-1))) { toneDistractor = correctZhuyin.slice(0, -1) + (correctZhuyin.slice(-1) === 'ˊ' ? 'ˇ' : 'ˊ'); } else { toneDistractor = correctZhuyin + 'ˊ'; }
             options.add(toneDistractor);
-
             let confusingDistractor = correctZhuyin;
             for (let char of correctZhuyin) {
-                if (confusionMap[char]) {
-                    confusingDistractor = correctZhuyin.replace(char, confusionMap[char]);
-                    options.add(confusingDistractor);
-                    break;
-                }
+                if (confusionMap[char]) { confusingDistractor = correctZhuyin.replace(char, confusionMap[char]); options.add(confusingDistractor); break; }
             }
-
             while (options.size < 3) {
                 let randomZ = DB.angus.zhuyin[Math.floor(Math.random() * DB.angus.zhuyin.length)];
-                if(correctZhuyin.includes(' ')) {
-                     randomZ += " " + DB.angus.zhuyin[Math.floor(Math.random() * DB.angus.zhuyin.length)];
-                }
+                if(correctZhuyin.includes(' ')) { randomZ += " " + DB.angus.zhuyin[Math.floor(Math.random() * DB.angus.zhuyin.length)]; }
                 options.add(randomZ + (Math.random()>0.5 ? 'ˊ' : ''));
             }
             return Array.from(options);
@@ -314,27 +305,23 @@
             let qData, options;
             
             if (type === 'h_zhuyin') { 
-                do { qData = getRandom(DB.hunter.chinese_zhuyin); }
-                while (currentQ && qData.q === currentQ.q && DB.hunter.chinese_zhuyin.length > 1);
+                do { qData = getRandom(DB.hunter.chinese_zhuyin); } while (currentQ && qData.q === currentQ.q && DB.hunter.chinese_zhuyin.length > 1);
                 options = shuffle(generateConfusingOptions(qData.a));
             }
             else if (type === 'h_english') { 
-                do { qData = getRandom(DB.hunter.english); }
-                while (currentQ && qData.q === currentQ.q && DB.hunter.english.length > 1);
+                do { qData = getRandom(DB.hunter.english); } while (currentQ && qData.q === currentQ.q && DB.hunter.english.length > 1);
                 let wrongs = DB.hunter.english.filter(x => x.q !== qData.q).map(x => x.q);
                 options = shuffle([qData.q, ...shuffle(wrongs).slice(0,3)]);
             }
             else if (type === 'a_zhuyin') {
                 let char;
-                do { char = getRandom(DB.angus.zhuyin); }
-                while (currentQ && char === currentQ.a && DB.angus.zhuyin.length > 1);
+                do { char = getRandom(DB.angus.zhuyin); } while (currentQ && char === currentQ.a && DB.angus.zhuyin.length > 1);
                 qData = { q: "?", a: char, audio: char, speak: "請找出 "+char };
                 let wrongs = DB.angus.zhuyin.filter(x => x !== char);
                 options = shuffle([char, ...shuffle(wrongs).slice(0,3)]);
             }
             else if (type === 'a_english') {
-                do { qData = getRandom(DB.angus.english); }
-                while (currentQ && qData.q === currentQ.q && DB.angus.english.length > 1);
+                do { qData = getRandom(DB.angus.english); } while (currentQ && qData.q === currentQ.q && DB.angus.english.length > 1);
                 let wrongs = DB.angus.english.filter(x => x.q !== qData.q).map(x => x.q);
                 options = shuffle([qData.q, ...shuffle(wrongs).slice(0,3)]);
             }
@@ -359,8 +346,7 @@
             let textLen = display.innerText.length;
             if (textLen <= 1) display.style.fontSize = "100px";
             else if (textLen === 2) display.style.fontSize = "80px";
-            else if (textLen === 3) display.style.fontSize = "60px";
-            else display.style.fontSize = "45px";
+            else if (textLen >= 3) display.style.fontSize = "70px"; 
 
             const hintDiv = document.getElementById('hint-btn');
             if (type === 'h_english' && qData.hint) {
@@ -378,10 +364,8 @@
                 let btn = document.createElement('button');
                 btn.className = 'opt-btn btn';
                 btn.innerText = opt;
-                
                 if (opt.length > 4) btn.style.fontSize = "24px";
                 else btn.style.fontSize = "36px";
-
                 let correctAns = qData.a || qData.q;
                 btn.onclick = () => checkAnswer(btn, opt, correctAns, type);
                 optContainer.appendChild(btn);
@@ -437,12 +421,16 @@
             document.getElementById('math-input').innerText = "";
             document.getElementById('half-btn').classList.add('hidden');
             document.getElementById('clock-canvas').classList.add('hidden');
-            document.getElementById('math-q').classList.remove('hidden');
+            
+            // 🛠️ 確保題目框存在且顯示
+            const mathQ = document.getElementById('math-q');
+            if(mathQ) mathQ.classList.remove('hidden');
 
             let config = mathConfig;
             let qText = "", qSub = "", ans = "";
             let currentType = config.type;
-            
+            let speakText = "";
+
             let maxTries = 10;
             let uniqueFound = false;
             let finalQStr = "";
@@ -478,14 +466,14 @@
                     qText = `<div style="display:flex; flex-wrap:wrap; justify-content:center; gap:5px; line-height:1.2;">${icon.repeat(count)}</div>`;
                     qSub = ""; 
                     ans = count.toString();
-                    currentQ = { ans: ans, type: currentType, speak: "有幾個？" }; 
+                    speakText = "有幾個？";
                 } else if (currentType === 'clock') {
                     let h = Math.floor(Math.random() * 12) + 1;
                     let m = 0;
                     let isHalf = (config.range === 'half' || (config.type === 'mix' && Math.random() > 0.5)) && Math.random() > 0.5;
                     if (isHalf) m = 30;
                     drawClock(h, m);
-                    qText = "現在是幾點？";
+                    qText = "現在是幾點？"; // 🛠️ 修正：確保時鐘有文字
                     qSub = "";
                     ans = m === 30 ? `${h}:30` : `${h}:00`;
                     finalQStr = `${h}:${m}`;
@@ -501,28 +489,24 @@
 
             if (currentType === 'clock') {
                 document.getElementById('clock-canvas').classList.remove('hidden');
-                document.getElementById('math-q').classList.remove('hidden');
                 
-                // 🛠️ 修正：如果是時鐘，題目字體縮小
-                const qEl = document.getElementById('math-q');
-                qEl.innerText = qText; 
-                qEl.style.fontSize = "50px"; 
+                // 🛠️ 修正：時鐘題目顯示
+                mathQ.innerText = qText;
+                mathQ.style.fontSize = "50px"; 
 
                 if (ans.endsWith(':30')) document.getElementById('half-btn').classList.remove('hidden');
             } else {
                 if (currentType !== 'count') {
                      currentQ = { ans: ans, type: currentType };
                 }
-                const qEl = document.getElementById('math-q');
-                qEl.innerHTML = qText;
-                qEl.style.fontSize = "80px"; 
+                mathQ.innerHTML = qText;
+                mathQ.style.fontSize = "80px"; 
                 document.getElementById('math-sub').innerHTML = qSub; 
             }
             
-            // 🛠️ 確保時鐘題的答案被記錄
-            currentQ = { ans: ans, type: currentType };
-            if (currentType === 'count') currentQ.speak = "有幾個？";
-            if (currentQ.speak) setTimeout(() => speakCurrent(), 300);
+            // 🛠️ 修正：確保 checkMath 抓得到 currentQ
+            currentQ = { ans: ans, type: currentType, speak: speakText };
+            if(speakText) setTimeout(() => speakCurrent(), 300);
         }
 
         function inputNum(val) {
@@ -539,6 +523,7 @@
             let isCorrect = false;
             let correctAns = currentQ.ans;
             if ((currentQ.type === 'clock' || mathConfig.type === 'mix') && correctAns.endsWith(":00")) {
+                // 允許只輸入數字
                 if (inputBuffer === correctAns || inputBuffer === correctAns.split(":")[0]) isCorrect = true;
             } else {
                 if (inputBuffer === correctAns) isCorrect = true;
