@@ -42,10 +42,15 @@
             -webkit-tap-highlight-color: transparent;
         }
 
-        /* === ❗ 強制套用注音字體 ❗ === */
-        .role-info h2, .role-info p, .menu-title, .menu-sub, .q-text, .q-sub, .opt-btn, .hint-toggle, .use-zhuyin {
+        /* === ❗ 強制套用注音字體 (加入 .btn 修正結束練習按鈕) ❗ === */
+        .role-info h2, .role-info p, .menu-title, .menu-sub, .q-text, .q-sub, .opt-btn, .hint-toggle, .use-zhuyin, .btn {
             font-family: 'ZhuyinFont', "Microsoft JhengHei", sans-serif !important;
             font-weight: normal;
+        }
+
+        /* === 🚫 特殊用途：強制不顯示注音 (用系統黑體) === */
+        .no-zhuyin {
+            font-family: "Microsoft JhengHei", -apple-system, sans-serif !important;
         }
 
         /* 通用元件 */
@@ -90,7 +95,6 @@
             padding: 20px 0; 
         }
 
-        /* 選單按鈕 */
         .menu-item { 
             background: white; 
             padding: 25px; 
@@ -109,18 +113,17 @@
         .menu-title { font-size: 36px; color: #333; margin: 0; display: inline-block; line-height: 1.4; white-space: nowrap; }
         .menu-sub { font-size: 18px; color: #888; display: block; margin-top: 5px; }
 
-        /* 答題區 */
-        .quiz-container { width: 95%; max-width: 600px; display: flex; flex-direction: column; align-items: center; padding-top: 20px; }
+        /* 答題區 - 寬度加大，適應橫排 */
+        .quiz-container { width: 95%; max-width: 800px; display: flex; flex-direction: column; align-items: center; padding-top: 20px; }
         .card { background: white; width: 100%; padding: 40px 20px; border-radius: 30px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); text-align: center; margin-bottom: 25px; position: relative; box-sizing: border-box; }
         
-        /* --- 題目文字修改區 (改為垂直排列) --- */
         .q-text { 
             font-size: 80px; 
             color: #333; 
             margin: 20px 0; 
             min-height: 100px; 
             display: flex; 
-            flex-direction: column; /* 垂直排列：大字在上，問題在下 */
+            flex-direction: column; 
             align-items: center; 
             justify-content: center; 
             line-height: 1.2; 
@@ -131,16 +134,17 @@
             color: #666; 
             margin-top: 5px; 
             margin-bottom: 15px; 
-            white-space: nowrap; /* 強制不換行 */
+            white-space: nowrap; 
         }
-        /* ------------------------------------ */
 
+        /* --- 🛠️ 修改這裡：選項改成橫向一列 --- */
         .options-grid { 
             display: flex; 
-            flex-direction: column; 
+            flex-direction: row;       /* 橫向排列 */
+            justify-content: center;   /* 居中 */
             gap: 15px; 
             width: 100%; 
-            max-width: 450px; 
+            flex-wrap: wrap;           /* 空間不夠時自動換行 (保護手機版) */
         }
         
         .opt-btn { 
@@ -150,17 +154,19 @@
             font-size: 42px; 
             border-radius: 20px; 
             color: #555; 
-            min-height: 80px; 
-            width: 100%; 
+            min-height: 100px; 
+            flex: 1;                   /* 讓每個按鈕平均分配寬度 */
+            min-width: 120px;          /* 設定最小寬度，避免太擠 */
             box-shadow: 0 5px 0 #ddd; 
             box-sizing: border-box;
         }
+        /* ------------------------------------ */
 
         .opt-btn:active { transform: translateY(5px); box-shadow: none; }
         .opt-btn.correct { background: #d4edda; border-color: #28a745; color: #155724; box-shadow: 0 5px 0 #1e7e34; }
         .opt-btn.wrong { background: #f8d7da; border-color: #dc3545; color: #721c24; box-shadow: 0 5px 0 #bd2130; }
 
-        .numpad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; width: 100%; }
+        .numpad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; width: 100%; max-width: 500px; }
         .num-btn { background: white; padding: 20px; font-size: 32px; border-radius: 15px; box-shadow: 0 6px 0 #ccc; color: #333; border: 1px solid #ddd; }
         .num-btn:active { box-shadow: none; transform: translateY(6px); }
         .action-btn { background: var(--primary); color: white; box-shadow: 0 6px 0 #2a6bb3; border: none; }
@@ -202,7 +208,7 @@
 
     <script>
         // ==========================================
-        // ⚙️ 邏輯控制中心 (LOGIC ONLY) - v3.5 垂直對齊版
+        // ⚙️ 邏輯控制中心 (LOGIC ONLY) - v3.7 防作弊+橫排版
         // ==========================================
         let currentRole = null;
         let score = 0;
@@ -231,9 +237,6 @@
             currentRole = null;
         }
 
-        // ==========================================
-        // 👦 哥哥的選單 (Hunter)
-        // ==========================================
         function showHunterCategories() {
             const container = document.getElementById('app-container');
             container.innerHTML = `<div class="menu-list" id="menu-list"></div>`;
@@ -261,9 +264,6 @@
             }
         }
 
-        // ==========================================
-        // 👶 弟弟的選單 (Angus)
-        // ==========================================
         function showAngusCategories() {
             const container = document.getElementById('app-container');
             container.innerHTML = `<div class="menu-list" id="menu-list"></div>`;
@@ -290,7 +290,6 @@
             }
         }
 
-        // --- 輔助函式：產生按鈕 ---
         function addMenuItem(parent, title, sub, action, color) {
             const btn = document.createElement('button');
             btn.className = 'menu-item btn';
@@ -320,9 +319,6 @@
             parent.appendChild(btn);
         }
 
-        // ==========================================
-        // 🎮 測驗邏輯 (Quiz)
-        // ==========================================
         function startQuiz(type) {
             score = 0;
             document.getElementById('score').innerText = 0;
@@ -365,10 +361,17 @@
             currentQ = qData;
             const display = document.getElementById('q-display');
             
-            if (type === 'h_zhuyin') display.innerHTML = qData.q;
-            else if (type === 'h_char') display.innerHTML = `<div>${qData.q}</div><div class="q-sub">${qData.sub}</div>`;
-            else if (type.includes('english')) display.innerHTML = currentRole==='hunter' ? "???" : qData.q;
-            else if (type === 'a_zhuyin') display.innerHTML = "?";
+            // --- 🚫 防作弊核心邏輯 ---
+            // 如果是哥哥的注音測驗 (h_zhuyin)，強制大標題移除注音字體
+            if (type === 'h_zhuyin') {
+                display.classList.add('no-zhuyin');
+                display.innerHTML = qData.q;
+            } else {
+                display.classList.remove('no-zhuyin'); // 其他模式恢復可愛字體
+                if (type === 'h_char') display.innerHTML = `<div>${qData.q}</div><div class="q-sub">${qData.sub}</div>`;
+                else if (type.includes('english')) display.innerHTML = currentRole==='hunter' ? "???" : qData.q;
+                else if (type === 'a_zhuyin') display.innerHTML = "?";
+            }
 
             const hintDiv = document.getElementById('hint-btn');
             if (type.includes('english') && qData.hint) {
@@ -403,9 +406,6 @@
             }
         }
 
-        // ==========================================
-        // 🔢 數學邏輯 (Math)
-        // ==========================================
         function startMath(config) {
             score = 0;
             document.getElementById('score').innerText = 0;
@@ -467,8 +467,11 @@
                 let p1 = Math.floor(Math.random() * total);
                 qText = `${total} 可以分成`; qSub = `${p1} 和 ?`; ans = (total - p1).toString();
             } else if (currentType === 'count') {
-                let count = Math.floor(Math.random() * 10) + 1;
-                qText = "🍎".repeat(count); qSub = "有幾個?"; ans = count.toString();
+                let count = Math.floor(Math.random() * config.range) + 1;
+                let icons = ['🍎', '🍌', '🍇', '🍊', '🍉', '🍒', '🐶', '🐱', '🐰', '🚗', '✈️', '⚽', '⭐️', '🍪', '🎈'];
+                let icon = icons[Math.floor(Math.random() * icons.length)];
+                qText = `<div style="display:flex; flex-wrap:wrap; justify-content:center; gap:5px;">${icon.repeat(count)}</div>`;
+                qSub = "有幾個?"; ans = count.toString();
             } else if (currentType === 'clock') {
                 document.getElementById('clock-canvas').classList.remove('hidden');
                 document.getElementById('math-q').classList.add('hidden');
@@ -483,7 +486,7 @@
             }
 
             currentQ = { ans: ans, type: currentType };
-            document.getElementById('math-q').innerText = qText;
+            document.getElementById('math-q').innerHTML = qText;
             document.getElementById('math-sub').innerText = qSub;
         }
 
@@ -518,7 +521,6 @@
             }
         }
 
-        // --- 通用功能 ---
         function backToMenu() {
             if (currentRole === 'hunter') { showHunterCategories(); } 
             else { showAngusCategories(); }
@@ -527,7 +529,7 @@
         function speakCurrent() {
             if (!currentQ) return;
             let text = currentQ.speak || currentQ.audio || currentQ.q;
-            if (!text || text.includes('🍎') || text.includes('?')) return; 
+            if (!text || text.includes('<div') || text.includes('?')) return; 
             let u = new SpeechSynthesisUtterance(text);
             u.lang = /[a-zA-Z]/.test(text) ? 'en-US' : 'zh-TW';
             u.rate = 0.8;
