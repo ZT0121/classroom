@@ -266,11 +266,11 @@
             addBackBtn(list, "⬅️ 回去選別的", () => showAngusCategories());
 
             if (subject === 'zhuyin') {
-                addMenuItem(list, "注音符號找找看", () => startQuiz('a_zhuyin'));
+                addMenuItem(list, "注音符號找找看", "", () => startQuiz('a_zhuyin'));
             } else if (subject === 'math') {
                 DB.angus.mathUnits.forEach(u => addMenuItem(list, u.name, u.desc, () => startMath(u)));
             } else if (subject === 'english') {
-                addMenuItem(list, "簡單單字", () => startQuiz('a_english'));
+                addMenuItem(list, "簡單單字", "", () => startQuiz('a_english'));
             }
         }
 
