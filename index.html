@@ -14,7 +14,6 @@
     <link rel="manifest" href="manifest.json">
 
     <style>
-        /* 1. 字體設定 */
         @font-face {
             font-family: 'ZhuyinFont';
             src: url('./fonts/zhuyin.ttf') format('truetype'),
@@ -40,18 +39,15 @@
             -webkit-tap-highlight-color: transparent;
         }
 
-        /* 強制套用注音字體 */
         .role-info h2, .role-info p, .menu-title, .menu-sub, .q-text, .q-sub, .opt-btn, .hint-toggle, .use-zhuyin, .btn {
             font-family: 'ZhuyinFont', "Microsoft JhengHei", sans-serif !important;
             font-weight: normal;
         }
 
-        /* 防作弊：黑體 */
         .no-zhuyin {
             font-family: "Microsoft JhengHei", -apple-system, sans-serif !important;
         }
 
-        /* 通用元件 */
         .hidden { display: none !important; }
         .btn { border: none; border-radius: 16px; cursor: pointer; transition: 0.2s; font-weight: bold; outline: none; display: flex; align-items: center; justify-content: center; }
         .btn:active { transform: scale(0.96); }
@@ -78,7 +74,7 @@
         .quiz-container { width: 95%; max-width: 900px; display: flex; flex-direction: column; align-items: center; padding-top: 20px; }
         .card { background: white; width: 100%; padding: 40px 20px; border-radius: 30px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); text-align: center; margin-bottom: 30px; position: relative; box-sizing: border-box; }
         
-        /* 題目大字 */
+        /* 題目大字 (預設 100px，會被 JS 動態修改) */
         .q-text { 
             font-size: 100px; 
             color: #333; 
@@ -89,28 +85,21 @@
             align-items: center; 
             justify-content: center; 
             line-height: 1.2; 
+            white-space: nowrap; /* 禁止換行，讓他自動縮小 */
         }
         
         .q-sub { font-size: 24px; color: #666; margin-top: 5px; margin-bottom: 15px; white-space: nowrap; }
 
-        /* 選項排版 (RWD 橫向) */
-        .options-grid { 
-            display: flex; 
-            width: 100%; 
-            gap: 20px; 
-            flex-direction: row; 
-            justify-content: center; 
-            flex-wrap: wrap; 
-        }
-
+        .options-grid { display: flex; width: 100%; gap: 20px; flex-direction: row; justify-content: center; flex-wrap: wrap; }
+        
         .opt-btn { 
             background: white; 
             border: 4px solid #f0f0f0; 
-            padding: 5px;          /* 縮小內距，把空間留給字 */
-            font-size: 42px;       /* 🛠️ 字體縮小，避免撐破 */
+            padding: 5px; 
+            font-size: 42px; /* 選項字體適中 */
             border-radius: 25px; 
             color: #555; 
-            min-height: 120px;     /* 高度稍微調小一點點 */
+            min-height: 120px; 
             box-shadow: 0 6px 0 #ddd; 
             box-sizing: border-box;
             display: flex;
@@ -119,8 +108,7 @@
             flex: 1;                   
             min-width: 140px;          
             max-width: 300px;
-            
-            white-space: nowrap;   /* 🛠️ 強制不准換行 */
+            white-space: nowrap;
         }
 
         .opt-btn:active { transform: translateY(6px); box-shadow: none; }
@@ -168,9 +156,6 @@
     <script src="questions.js"></script>
 
     <script>
-        // ==========================================
-        // ⚙️ 邏輯控制中心
-        // ==========================================
         let currentRole = null;
         let score = 0;
         let currentQ = null;
@@ -185,7 +170,6 @@
             
             document.body.className = role === 'hunter' ? 'hunter-app' : 'angus-app';
             document.getElementById('nav-title').innerText = role === 'hunter' ? 'Hunter 專屬' : 'Angus 專屬';
-            
             if (role === 'hunter') { showHunterCategories(); } 
             else { showAngusCategories(); }
         }
@@ -214,7 +198,7 @@
             addBackBtn(list, "⬅️ 回科目選單", () => showHunterCategories());
 
             if (subject === 'chinese') {
-                addMenuItem(list, "聽音選注音", "", () => startQuiz('h_zhuyin'));
+                addMenuItem(list, "圈詞注音練習", "聽音選注音", () => startQuiz('h_zhuyin'));
             } else if (subject === 'math') {
                 DB.hunter.mathUnits.forEach(u => addMenuItem(list, u.name, u.desc, () => startMath(u)));
             } else if (subject === 'english') {
@@ -270,9 +254,6 @@
             parent.appendChild(btn);
         }
 
-        // ==========================================
-        // 🧠 智慧選項生成器
-        // ==========================================
         function generateConfusingOptions(correctZhuyin) {
             const confusionMap = {
                 'ㄣ': 'ㄥ', 'ㄥ': 'ㄣ', 'ㄢ': 'ㄤ', 'ㄤ': 'ㄢ',
@@ -290,6 +271,7 @@
 
             let toneDistractor = correctZhuyin;
             const tones = ['ˊ', 'ˇ', 'ˋ', '˙'];
+            // 嘗試替換最後一個字的聲調
             if (tones.includes(correctZhuyin.slice(-1))) {
                 toneDistractor = correctZhuyin.slice(0, -1) + (correctZhuyin.slice(-1) === 'ˊ' ? 'ˇ' : 'ˊ');
             } else {
@@ -307,15 +289,17 @@
             }
 
             while (options.size < 3) {
+                // 隨機產生干擾項，長度稍微跟答案差不多
                 let randomZ = DB.angus.zhuyin[Math.floor(Math.random() * DB.angus.zhuyin.length)];
+                // 如果答案有兩個字(有空格)，隨機也加個空格
+                if(correctZhuyin.includes(' ')) {
+                     randomZ += " " + DB.angus.zhuyin[Math.floor(Math.random() * DB.angus.zhuyin.length)];
+                }
                 options.add(randomZ + (Math.random()>0.5 ? 'ˊ' : ''));
             }
             return Array.from(options);
         }
 
-        // ==========================================
-        // 🎮 測驗邏輯
-        // ==========================================
         function startQuiz(type) {
             score = 0;
             document.getElementById('score').innerText = 0;
@@ -372,6 +356,13 @@
                 else if (type === 'a_zhuyin') display.innerHTML = "?";
             }
 
+            // 🛠️ 智慧字體縮放邏輯 (Smart Resizer)
+            let textLen = display.innerText.length;
+            if (textLen <= 1) display.style.fontSize = "100px";
+            else if (textLen === 2) display.style.fontSize = "80px";
+            else if (textLen === 3) display.style.fontSize = "60px";
+            else display.style.fontSize = "45px";
+
             const hintDiv = document.getElementById('hint-btn');
             if (type.includes('english') && qData.hint) {
                 hintDiv.className = 'btn hint-toggle';
@@ -388,6 +379,11 @@
                 let btn = document.createElement('button');
                 btn.className = 'opt-btn btn';
                 btn.innerText = opt;
+                
+                // 選項字體也微調一下，如果選項太長就縮小
+                if (opt.length > 4) btn.style.fontSize = "32px";
+                else btn.style.fontSize = "42px";
+
                 let correctAns = qData.a || qData.q;
                 btn.onclick = () => checkAnswer(btn, opt, correctAns, type);
                 optContainer.appendChild(btn);
@@ -414,7 +410,7 @@
                 <div class="quiz-container">
                     <canvas id="clock-canvas" width="280" height="280" class="hidden"></canvas>
                     <div class="card" style="padding: 15px;">
-                        <div id="math-q" class="q-text"></div>
+                        <div id="math-q" class="q-text" style="font-size:80px;"></div>
                         <div id="math-sub" class="q-sub"></div>
                         <div id="math-input" style="font-size:60px !important; color:#4a90e2; border-bottom:3px solid #ddd; height:70px; width:100%; margin-top:10px;"></div>
                     </div>
