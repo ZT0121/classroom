@@ -140,7 +140,7 @@
             <div class="role-avatar" style="background:#fff3cd;">👶</div>
             <div class="role-info">
                 <h2>弟弟 Angus</h2>
-                <p>注音、數數、時鐘</p>
+                <p>注音、數󠇡數、時鐘</p>
             </div>
         </div>
     </div>
@@ -206,7 +206,7 @@
             container.innerHTML = `<div class="menu-list" id="menu-list"></div>`;
             const list = document.getElementById('menu-list');
             addMenuItem(list, "🗣️ 注音", "", () => showAngusSubject('zhuyin'), '#ffd1dc');
-            addMenuItem(list, "🍎 數數", "", () => showAngusSubject('math'), '#fff5ba');
+            addMenuItem(list, "🍎 數󠇡數", "", () => showAngusSubject('math'), '#fff5ba');
             addMenuItem(list, "🐶 英文", "", () => showAngusSubject('english'), '#baffc9');
         }
 
@@ -480,9 +480,9 @@
                     let icons = ['🍎', '🍌', '🍇', '🍊', '🍉', '🍒', '🐶', '🐱', '🐰', '🚗', '✈️', '⚽', '⭐️', '🍪', '🎈'];
                     let icon = icons[Math.floor(Math.random() * icons.length)];
                     qText = `<div style="display:flex; flex-wrap:wrap; justify-content:center; gap:5px; line-height:1.2;">${icon.repeat(count)}</div>`;
-                    qSub = ""; // 數數也不需要副標題，語音會念「有幾個」
+                    qSub = ""; // 數󠇡數也不需要副標題，語音會念「有幾個」
                     ans = count.toString();
-                    currentQ = { ans: ans, type: currentType, speak: "有幾個？" }; // 🛠️ 強制設定語音
+                    currentQ = { ans: ans, type: currentType, speak: "有幾個󠇡？" }; // 🛠️ 強制設定語音
                 } else if (currentType === 'clock') {
                     let h = Math.floor(Math.random() * 12) + 1;
                     let m = 0;
