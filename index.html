@@ -141,9 +141,11 @@
 
     <script src="questions.js"></script>
 
+<script src="questions.js"></script>
+
     <script>
         // ==========================================
-        // ⚙️ 邏輯控制中心
+        // ⚙️ 邏輯控制中心 (LOGIC ONLY) - v2.0 分類版
         // ==========================================
         let currentRole = null;
         let score = 0;
@@ -161,7 +163,12 @@
             document.body.className = role === 'hunter' ? 'hunter-app' : 'angus-app';
             document.getElementById('nav-title').innerText = role === 'hunter' ? 'Hunter 的教室' : 'Angus 的遊戲';
             
-            showMenu();
+            // 判斷是哥哥還是弟弟，進入不同的選單邏輯
+            if (role === 'hunter') {
+                showHunterCategories(); // 哥哥：顯示科目分類
+            } else {
+                showAngusMenu(); // 弟弟：直接顯示所有項目 (因為項目少)
+            }
         }
 
         function goHome() {
@@ -172,36 +179,87 @@
             currentRole = null;
         }
 
-        function showMenu() {
+        // ==========================================
+        // 👦 哥哥的選單邏輯 (兩層式：科目 -> 單元)
+        // ==========================================
+        
+        // 第一層：顯示三大科目
+        function showHunterCategories() {
             const container = document.getElementById('app-container');
             container.innerHTML = `<div class="menu-list" id="menu-list"></div>`;
             const list = document.getElementById('menu-list');
-            
-            if (currentRole === 'hunter') {
-                addMenuItem(list, "國語：首冊 (拼音)", "聽音選注音", () => startQuiz('h_zhuyin'));
-                addMenuItem(list, "國語：第一冊 (認字)", "部首與筆畫", () => startQuiz('h_char'));
-                addMenuItem(list, "英文：雙語繪本", "聽音辨字 (含提示)", () => startQuiz('h_english'));
+
+            // 國語按鈕
+            addMenuItem(list, "📚 國語", "首冊拼音、一冊認字", () => showHunterSubject('chinese'), '#ff9a9e');
+            // 數學按鈕
+            addMenuItem(list, "🔢 數學", "南一版進度練習", () => showHunterSubject('math'), '#4facfe');
+            // 英文按鈕
+            addMenuItem(list, "🔤 英文", "雙語繪本單字", () => showHunterSubject('english'), '#a8e6cf');
+        }
+
+        // 第二層：顯示該科目的細項
+        function showHunterSubject(subject) {
+            const container = document.getElementById('app-container');
+            container.innerHTML = `<div class="menu-list" id="menu-list"></div>`;
+            const list = document.getElementById('menu-list');
+
+            // 加入「回上一頁」按鈕
+            addBackBtn(list, "⬅️ 回科目選單", () => showHunterCategories());
+
+            if (subject === 'chinese') {
+                addMenuItem(list, "首冊 (拼音)", "聽音選注音", () => startQuiz('h_zhuyin'));
+                addMenuItem(list, "第一冊 (認字)", "部首與筆畫", () => startQuiz('h_char'));
+            } 
+            else if (subject === 'math') {
                 DB.hunter.mathUnits.forEach(u => {
-                    addMenuItem(list, "數學：" + u.name, u.desc, () => startMath(u));
+                    addMenuItem(list, u.name, u.desc, () => startMath(u));
                 });
-            } else {
-                addMenuItem(list, "注音符號找找看", "聽音找字 (全範圍)", () => startQuiz('a_zhuyin'));
-                addMenuItem(list, "英文：簡單單字", "顏色、動物", () => startQuiz('a_english'));
-                DB.angus.mathUnits.forEach(u => {
-                    addMenuItem(list, "數學：" + u.name, u.desc, () => startMath(u));
-                });
+            } 
+            else if (subject === 'english') {
+                addMenuItem(list, "雙語繪本單字", "聽音辨字 (含提示)", () => startQuiz('h_english'));
             }
         }
 
-        function addMenuItem(parent, title, sub, action) {
+        // ==========================================
+        // 👶 弟弟的選單邏輯 (單層式)
+        // ==========================================
+        function showAngusMenu() {
+            const container = document.getElementById('app-container');
+            container.innerHTML = `<div class="menu-list" id="menu-list"></div>`;
+            const list = document.getElementById('menu-list');
+
+            addMenuItem(list, "注音符號找找看", "聽音找字 (全範圍)", () => startQuiz('a_zhuyin'));
+            addMenuItem(list, "英文：簡單單字", "顏色、動物", () => startQuiz('a_english'));
+            DB.angus.mathUnits.forEach(u => {
+                addMenuItem(list, "數學：" + u.name, u.desc, () => startMath(u));
+            });
+        }
+
+        // --- 輔助函式：產生按鈕 ---
+        function addMenuItem(parent, title, sub, action, color) {
             const btn = document.createElement('button');
             btn.className = 'menu-item btn';
+            // 如果有指定顏色，改變左邊邊框顏色
+            if (color) btn.style.borderLeftColor = color;
+            
             btn.innerHTML = `<div><span class="menu-title">${title}</span><span class="menu-sub">${sub}</span></div>`;
             btn.onclick = action;
             parent.appendChild(btn);
         }
 
-        // --- 測驗邏輯 (Quiz) ---
+        function addBackBtn(parent, title, action) {
+            const btn = document.createElement('button');
+            btn.className = 'menu-item btn';
+            btn.style.background = '#f1f1f1'; // 灰色背景區隔
+            btn.style.borderLeft = 'none';
+            btn.innerHTML = `<span class="menu-title" style="font-size:18px; color:#666;">${title}</span>`;
+            btn.onclick = action;
+            parent.appendChild(btn);
+        }
+
+        // ==========================================
+        // 🎮 測驗邏輯 (Quiz) - 這裡往下都沒變
+        // ==========================================
         function startQuiz(type) {
             score = 0;
             document.getElementById('score').innerText = 0;
@@ -214,7 +272,7 @@
                         <div id="hint-btn" class="hidden"></div>
                     </div>
                     <div id="opt-container" class="options-grid"></div>
-                    <button class="btn" onclick="showMenu()" style="margin-top:20px; color:#888; font-size:16px;">結束練習</button>
+                    <button class="btn" onclick="backToMenu()" style="margin-top:20px; color:#888; font-size:16px;">結束練習</button>
                 </div>`;
             nextQuizQuestion(type);
         }
@@ -246,9 +304,8 @@
             currentQ = qData;
             const display = document.getElementById('q-display');
             
-            // 根據題型顯示
             if (type === 'h_zhuyin') {
-                display.innerHTML = qData.q; // 顯示國字
+                display.innerHTML = qData.q; 
             } else if (type === 'h_char') {
                 display.innerHTML = `<div>${qData.q}</div><div class="q-sub">${qData.sub}</div>`;
             } else if (type.includes('english')) {
@@ -257,7 +314,6 @@
                 display.innerHTML = "?";
             }
 
-            // 英文提示
             const hintDiv = document.getElementById('hint-btn');
             if (type.includes('english') && qData.hint) {
                 hintDiv.className = 'btn hint-toggle';
@@ -291,7 +347,9 @@
             }
         }
 
-        // --- 數學邏輯 (Math) ---
+        // ==========================================
+        // 🔢 數學邏輯 (Math)
+        // ==========================================
         function startMath(config) {
             score = 0;
             document.getElementById('score').innerText = 0;
@@ -320,7 +378,7 @@
                         <button class="num-btn action-btn" onclick="checkMath()">OK</button>
                         <button id="half-btn" class="num-btn half-btn hidden" onclick="inputNum(':30')">🕒 半 (:30)</button>
                     </div>
-                    <button class="btn" onclick="showMenu()" style="margin-top:20px; color:#999; font-size:16px;">結束練習</button>
+                    <button class="btn" onclick="backToMenu()" style="margin-top:20px; color:#999; font-size:16px;">結束練習</button>
                 </div>`;
             nextMathQuestion();
         }
@@ -367,7 +425,6 @@
                 let m = 0;
                 let isHalf = (config.range === 'half' || (config.type === 'mix' && Math.random() > 0.5)) && Math.random() > 0.5;
                 if (isHalf) m = 30;
-                
                 drawClock(h, m);
                 qSub = "電子鐘怎麼寫？";
                 ans = m === 30 ? `${h}:30` : `${h}:00`;
@@ -410,7 +467,17 @@
             }
         }
 
-        // --- 工具與繪圖 ---
+        // --- 通用功能 ---
+        function backToMenu() {
+            if (currentRole === 'hunter') {
+                // 如果是哥哥，判斷現在是在科目選單還是最上層？
+                // 為了簡單，統一回到「科目選擇」
+                showHunterCategories();
+            } else {
+                showAngusMenu();
+            }
+        }
+
         function speakCurrent() {
             if (!currentQ) return;
             let text = currentQ.speak || currentQ.audio || currentQ.q;
