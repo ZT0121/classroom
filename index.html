@@ -15,11 +15,10 @@
 
     <style>
         /* =========================================
-           1. 字體設定 (FONT SETUP)
+           1. 字體設定
            ========================================= */
         @font-face {
             font-family: 'ZhuyinFont';
-            /* 同時嘗試兩種路徑，確保抓得到 */
             src: url('./fonts/zhuyin.ttf') format('truetype'),
                  url('zhuyin.ttf') format('truetype');
             font-display: swap;
@@ -114,16 +113,34 @@
         .quiz-container { width: 95%; max-width: 600px; display: flex; flex-direction: column; align-items: center; padding-top: 20px; }
         .card { background: white; width: 100%; padding: 40px 20px; border-radius: 30px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); text-align: center; margin-bottom: 25px; position: relative; box-sizing: border-box; }
         
-        .q-text { font-size: 80px; color: #333; margin: 20px 0; min-height: 100px; display: flex; align-items: center; justify-content: center; line-height: 1.3; }
-        .q-sub { font-size: 24px; color: #666; margin-top: -10px; margin-bottom: 15px; }
+        /* --- 題目文字修改區 (改為垂直排列) --- */
+        .q-text { 
+            font-size: 80px; 
+            color: #333; 
+            margin: 20px 0; 
+            min-height: 100px; 
+            display: flex; 
+            flex-direction: column; /* 垂直排列：大字在上，問題在下 */
+            align-items: center; 
+            justify-content: center; 
+            line-height: 1.2; 
+        }
+        
+        .q-sub { 
+            font-size: 24px; 
+            color: #666; 
+            margin-top: 5px; 
+            margin-bottom: 15px; 
+            white-space: nowrap; /* 強制不換行 */
+        }
+        /* ------------------------------------ */
 
-        /* --- 🛠️ 修改這裡：選項改成直式堆疊 --- */
         .options-grid { 
-            display: flex;             /* 改成 Flex 佈局 */
-            flex-direction: column;    /* 垂直排列 */
-            gap: 15px;                 /* 按鈕間距 */
+            display: flex; 
+            flex-direction: column; 
+            gap: 15px; 
             width: 100%; 
-            max-width: 450px;          /* 限制最大寬度，避免在電腦上太長 */
+            max-width: 450px; 
         }
         
         .opt-btn { 
@@ -133,12 +150,11 @@
             font-size: 42px; 
             border-radius: 20px; 
             color: #555; 
-            min-height: 80px;         /* 高度稍微修小一點點，因為變多了 */
-            width: 100%;              /* 寬度填滿 */
+            min-height: 80px; 
+            width: 100%; 
             box-shadow: 0 5px 0 #ddd; 
             box-sizing: border-box;
         }
-        /* ------------------------------------ */
 
         .opt-btn:active { transform: translateY(5px); box-shadow: none; }
         .opt-btn.correct { background: #d4edda; border-color: #28a745; color: #155724; box-shadow: 0 5px 0 #1e7e34; }
@@ -175,7 +191,7 @@
             <div class="role-avatar" style="background:#fff3cd;">👶</div>
             <div class="role-info">
                 <h2>弟弟 Angus</h2>
-                <p>注音、數󠇡數、時鐘</p>
+                <p>注音、數數、時鐘</p>
             </div>
         </div>
     </div>
@@ -186,7 +202,7 @@
 
     <script>
         // ==========================================
-        // ⚙️ 邏輯控制中心 (LOGIC ONLY) - v3.3 選項修復版
+        // ⚙️ 邏輯控制中心 (LOGIC ONLY) - v3.5 垂直對齊版
         // ==========================================
         let currentRole = null;
         let score = 0;
@@ -254,7 +270,7 @@
             const list = document.getElementById('menu-list');
 
             addMenuItem(list, "🗣️ 注音", "", () => showAngusSubject('zhuyin'), '#ffd1dc');
-            addMenuItem(list, "🍎 數󠇡數", "", () => showAngusSubject('math'), '#fff5ba');
+            addMenuItem(list, "🍎 數數", "", () => showAngusSubject('math'), '#fff5ba');
             addMenuItem(list, "🐶 英文", "", () => showAngusSubject('english'), '#baffc9');
         }
 
