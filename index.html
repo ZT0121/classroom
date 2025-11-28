@@ -56,6 +56,7 @@
             font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif !important;
             font-weight: bold;
             margin: 0 5px;
+            vertical-align: baseline; /* 對齊修正 */
         }
 
         /* 通用元件 */
@@ -92,8 +93,8 @@
             margin: 20px 0; 
             min-height: 120px; 
             display: flex; 
-            flex-direction: row; 
-            flex-wrap: wrap;     
+            flex-direction: row; /* 橫向排列 */
+            flex-wrap: wrap;     /* 允許換行 */
             justify-content: center; 
             align-items: center; 
             line-height: 1.3; 
@@ -133,14 +134,14 @@
         <div class="role-card" onclick="selectRole('hunter')" style="border-left: 6px solid #4facfe;">
             <div class="role-avatar" style="background:#e3f2fd;">👦</div>
             <div class="role-info">
-                <h2>Hunter</h2>
+                <h2>哥哥 Hunter</h2>
                 <p>國語、數學、英文</p>
             </div>
         </div>
         <div class="role-card" onclick="selectRole('angus')" style="border-left: 6px solid #ff9a9e;">
             <div class="role-avatar" style="background:#fff3cd;">👶</div>
             <div class="role-info">
-                <h2>Angus</h2>
+                <h2>弟弟 Angus</h2>
                 <p>注音、數數、時鐘</p>
             </div>
         </div>
@@ -151,11 +152,6 @@
     <script src="questions.js"></script>
 
     <script>
-        // --- 防呆：確保 DB 存在 ---
-        if (typeof DB === 'undefined') {
-            alert("錯誤：找不到題庫檔案 questions.js，請確認檔案是否已上傳！");
-        }
-
         let currentRole = null;
         let score = 0;
         let currentQ = null;
@@ -171,7 +167,6 @@
             
             document.body.className = role === 'hunter' ? 'hunter-app' : 'angus-app';
             document.getElementById('nav-title').innerText = role === 'hunter' ? 'Hunter 專屬' : 'Angus 專屬';
-            
             if (role === 'hunter') { showHunterCategories(); } 
             else { showAngusCategories(); }
         }
@@ -202,7 +197,7 @@
             if (subject === 'chinese') {
                 addMenuItem(list, "圈詞注音練習", "聽音選注音", () => startQuiz('h_zhuyin'));
             } else if (subject === 'math') {
-                if(DB.hunter.mathUnits) {
+                if(DB && DB.hunter && DB.hunter.mathUnits) {
                     DB.hunter.mathUnits.forEach(u => addMenuItem(list, u.name, u.desc, () => startMath(u)));
                 }
             } else if (subject === 'english') {
@@ -228,7 +223,7 @@
             if (subject === 'zhuyin') {
                 addMenuItem(list, "注音符號找找看", "", () => startQuiz('a_zhuyin'));
             } else if (subject === 'math') {
-                if(DB.angus.mathUnits) {
+                if(DB && DB.angus && DB.angus.mathUnits) {
                     DB.angus.mathUnits.forEach(u => addMenuItem(list, u.name, u.desc, () => startMath(u)));
                 }
             } else if (subject === 'english') {
@@ -418,10 +413,9 @@
             document.getElementById('math-input').innerText = "";
             document.getElementById('half-btn').classList.add('hidden');
             document.getElementById('clock-canvas').classList.add('hidden');
-            
-            // 🛠️ 關鍵修正：強制顯示 math-q
+            // 🛠️ 關鍵修正：強制顯示 math-q 容器，避免題目消失
             const mathQ = document.getElementById('math-q');
-            if(mathQ) mathQ.classList.remove('hidden');
+            mathQ.classList.remove('hidden');
 
             let config = mathConfig;
             let qText = "", qSub = "", ans = "";
@@ -486,14 +480,11 @@
 
             if (currentType === 'clock') {
                 document.getElementById('clock-canvas').classList.remove('hidden');
-                
-                // 🛠️ 修正：時鐘題目顯示
                 mathQ.innerText = qText;
                 mathQ.style.fontSize = "50px"; 
 
                 if (ans.endsWith(':30')) document.getElementById('half-btn').classList.remove('hidden');
             } else {
-                // 🛠️ 其他模式顯示題目
                 if (currentType !== 'count') {
                      currentQ = { ans: ans, type: currentType };
                 }
@@ -502,7 +493,6 @@
                 document.getElementById('math-sub').innerHTML = qSub; 
             }
             
-            // 🛠️ 修正：確保 checkMath 抓得到 currentQ
             currentQ = { ans: ans, type: currentType, speak: speakText };
             if(speakText) setTimeout(() => speakCurrent(), 300);
         }
