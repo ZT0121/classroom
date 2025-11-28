@@ -260,9 +260,6 @@
             parent.appendChild(btn);
         }
 
-        // ----------------------------------------------------
-        // 核心生成器
-        // ----------------------------------------------------
         function generateConfusingOptions(correctZhuyin) {
             const confusionMap = { 'ㄣ':'ㄥ', 'ㄥ':'ㄣ', 'ㄢ':'ㄤ', 'ㄤ':'ㄢ', 'ㄓ':'ㄗ', 'ㄗ':'ㄓ', 'ㄕ':'ㄙ', 'ㄙ':'ㄕ', 'ㄔ':'ㄘ', 'ㄘ':'ㄔ', 'ㄌ':'ㄖ', 'ㄖ':'ㄌ', 'ㄅ':'ㄆ', 'ㄆ':'ㄅ', 'ㄉ':'ㄊ', 'ㄊ':'ㄉ', 'ㄍ':'ㄎ', 'ㄎ':'ㄍ', 'ㄐ':'ㄑ', 'ㄑ':'ㄐ', 'ㄨ':'ㄩ', 'ㄩ':'ㄨ', 'ㄟ':'ㄝ', 'ㄝ':'ㄟ', 'ㄡ':'ㄛ', 'ㄛ':'ㄡ', 'ˊ':'ˇ', 'ˇ':'ˋ', 'ˋ':'˙', '˙':'' };
             let options = new Set();
@@ -422,7 +419,7 @@
             document.getElementById('half-btn').classList.add('hidden');
             document.getElementById('clock-canvas').classList.add('hidden');
             
-            // 🛠️ 確保題目框存在且顯示
+            // 🛠️ 關鍵修正：強制顯示 math-q
             const mathQ = document.getElementById('math-q');
             if(mathQ) mathQ.classList.remove('hidden');
 
@@ -473,7 +470,7 @@
                     let isHalf = (config.range === 'half' || (config.type === 'mix' && Math.random() > 0.5)) && Math.random() > 0.5;
                     if (isHalf) m = 30;
                     drawClock(h, m);
-                    qText = "現在是幾點？"; // 🛠️ 修正：確保時鐘有文字
+                    qText = "現在是幾點？";
                     qSub = "";
                     ans = m === 30 ? `${h}:30` : `${h}:00`;
                     finalQStr = `${h}:${m}`;
@@ -496,6 +493,7 @@
 
                 if (ans.endsWith(':30')) document.getElementById('half-btn').classList.remove('hidden');
             } else {
+                // 🛠️ 其他模式顯示題目
                 if (currentType !== 'count') {
                      currentQ = { ans: ans, type: currentType };
                 }
@@ -523,7 +521,6 @@
             let isCorrect = false;
             let correctAns = currentQ.ans;
             if ((currentQ.type === 'clock' || mathConfig.type === 'mix') && correctAns.endsWith(":00")) {
-                // 允許只輸入數字
                 if (inputBuffer === correctAns || inputBuffer === correctAns.split(":")[0]) isCorrect = true;
             } else {
                 if (inputBuffer === correctAns) isCorrect = true;
