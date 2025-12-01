@@ -550,7 +550,7 @@
             nextMathQuestion();
         }
 
-        function nextMathQuestion() {
+function nextMathQuestion() {
             inputBuffer = "";
             document.getElementById('math-input').innerText = "";
             document.getElementById('half-btn').classList.add('hidden');
@@ -569,8 +569,9 @@
             let finalQStr = "";
 
             do {
+                // 混合模式：加入 seq (順序)
                 if (config.type === 'mix') {
-                    const types = ['add', 'sub', 'decomp', 'clock'];
+                    const types = ['add', 'sub', 'decomp', 'clock', 'seq'];
                     currentType = types[Math.floor(Math.random() * types.length)];
                 }
 
@@ -599,21 +600,46 @@
                     qText = `<div style="display:flex; flex-wrap:wrap; justify-content:center; gap:5px; line-height:1.2;">${icon.repeat(count)}</div>`;
                     qSub = ""; 
                     ans = count.toString();
-                    speakText = "有幾個󠇡？";
+                    speakText = "有幾個？";
+                } else if (currentType === 'seq') { // 🛠️ 新增：順序題
+                    // 動物池
+                    let animals = ['🐭','🐮','🐯','🐰','🐲','🐍','🐴','🐑','🐵','🐔','🐶','🐷'];
+                    // 隨機抓 5 隻不重複的動物排隊
+                    let queue = [];
+                    while(queue.length < 5) {
+                        let a = animals[Math.floor(Math.random() * animals.length)];
+                        if(!queue.includes(a)) queue.push(a);
+                    }
+                    
+                    // 選一個主角
+                    let targetIndex = Math.floor(Math.random() * 5);
+                    let target = queue[targetIndex];
+                    
+                    // 隨機決定問左邊還是右邊
+                    let isFromLeft = Math.random() > 0.5;
+                    let directionStr = isFromLeft ? "左邊" : "右邊";
+                    
+                    // 計算答案 (第幾個)
+                    let correctPos = isFromLeft ? (targetIndex + 1) : (5 - targetIndex);
+                    ans = correctPos.toString();
+                    
+                    // 顯示題目 (用 div 包裹讓 Emoji 排列整齊)
+                    qText = `<div style="font-size:60px; letter-spacing:5px; margin-bottom:10px;">${queue.join('')}</div>`;
+                    qSub = `從${directionStr}數，${target}是第幾個？`;
                 } else if (currentType === 'clock') {
                     let h = Math.floor(Math.random() * 12) + 1;
                     let m = 0;
                     let isHalf = (config.range === 'half' || (config.type === 'mix' && Math.random() > 0.5)) && Math.random() > 0.5;
                     if (isHalf) m = 30;
                     drawClock(h, m);
-                    qText = "現在是幾點？"; 
+                    qText = "現在是幾點？";
                     qSub = "";
                     ans = m === 30 ? `${h}:30` : `${h}:00`;
                     finalQStr = `${h}:${m}`;
                     uniqueFound = true; 
                 }
 
-                if (currentType !== 'clock') finalQStr = qText;
+                if (currentType !== 'clock') finalQStr = qText + qSub; // 加入 qSub 判斷避免重複
                 if (finalQStr !== lastMathQ) uniqueFound = true;
 
             } while (!uniqueFound && maxTries-- > 0);
@@ -626,18 +652,18 @@
                 mathQ.style.fontSize = "50px"; 
                 if (ans.endsWith(':30')) document.getElementById('half-btn').classList.remove('hidden');
             } else {
-                if (currentType !== 'count') {
-                     currentQ = { ans: ans, type: currentType };
-                }
+                if (currentType !== 'count') currentQ = { ans: ans, type: currentType };
+                
                 mathQ.innerHTML = qText;
-                mathQ.style.fontSize = "80px"; 
+                mathQ.style.fontSize = (currentType === 'seq') ? "60px" : "80px"; // 順序題字體微調
+                
                 document.getElementById('math-sub').innerHTML = qSub; 
             }
             
             currentQ = { ans: ans, type: currentType, speak: speakText };
             if(speakText) setTimeout(() => speakCurrent(), 300);
         }
-
+        
         function inputNum(val) {
             if (val === 'C') { inputBuffer = ""; }
             else {
