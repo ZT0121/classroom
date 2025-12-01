@@ -246,7 +246,7 @@ const DB = {
         zhuyin: "ㄅㄆㄇㄈㄉㄊㄋㄌㄍㄎㄏㄐㄑㄒㄓㄔㄕㄖㄗㄘㄙㄧㄨㄩㄚㄛㄜㄝㄞㄟㄠㄡㄢㄣㄤㄥㄦ".split(""),
         
         mathUnits: [
-            { id: "a_count", name: "數數練習", desc:"數數看有幾個?", type: "count", range: 20 },
+            { id: "a_count", name: "數󠇡數練習", desc:"數󠇡數󠇡看有幾個󠇡?", type: "count", range: 20 },
             { id: "a_clock", name: "看時鐘", desc:"長針指著12", type: "clock", range: "full" }
         ],
         
